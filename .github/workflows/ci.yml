@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Placeholder install
+        run: |
+          echo "Add package.json + tests here"
+          mkdir -p dist
+          echo "build-$(date -u +%Y%m%dT%H%M%SZ)" > dist/build-info.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: dist/
+          retention-days: 7
+
+      - name: Job summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.summary
+              .addHeading('CI ran')
+              .addRaw('Checkout + setup-node + artifact upload completed.')
+              .write()
